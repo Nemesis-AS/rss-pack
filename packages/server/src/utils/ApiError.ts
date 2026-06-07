@@ -9,11 +9,15 @@ export default class ApiError extends Error {
     this.name = "ApiError";
   }
 
-  static badRequest(message: string) {
+  static BadRequest(message: string) {
     return new ApiError(400, message);
   }
 
-  static notFound(resource: string) {
+  static NotFound(resource: string) {
     return new ApiError(404, `${resource} not found`);
+  }
+
+  static InternalServerError(message: string) {
+    return new ApiError(500, message);
   }
 }
