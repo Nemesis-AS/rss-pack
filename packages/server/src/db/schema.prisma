@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Feed {
+  id                    String    @id @default(uuid())
+  title                 String?
+  url                   String    @unique
+  siteUrl               String?
+  description           String?
+  refreshInterval       Int       @default(60)
+  lastFetchedAt         DateTime?
+  lastSuccessfulFetchAt DateTime?
+  lastErrorAt           DateTime?
+  lastErrorMessage      String?
+  failureCount          Int       @default(0)
+  isDisabled            Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  articles Article[]
+}
+
+model Article {
+  id          String    @id @default(uuid())
+  feedId      String
+  guid        String?
+  url         String?
+  title       String
+  author      String?
+  summary     String?
+  publishedAt DateTime?
+  isRead      Boolean   @default(false)
+  isStarred   Boolean   @default(false)
+  contentHash String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  feed Feed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+
+  @@unique([feedId, guid])
+  @@unique([feedId, url])
+  @@unique([feedId, contentHash])
+  @@index([publishedAt])
+  @@index([isRead])
+  @@index([isStarred])
+  @@index([feedId])
+}
