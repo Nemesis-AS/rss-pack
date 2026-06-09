@@ -9,16 +9,25 @@ import {
   syncFeed,
 } from "../controllers/feed.controller";
 import validateDto from "../middlewares/validate-dto";
-import { getAllFeedsDto } from "../dto";
+import {
+  addFeedMonitoringDto,
+  feedIdParamDto,
+  getAllFeedsDto,
+  getArticlesByFeedDto,
+} from "../dto";
 
 const router = express.Router();
 
 router.get("/", validateDto(getAllFeedsDto), getAllFeeds);
-router.post("/", addFeedMonitoring);
-router.get("/:id", getFeedById);
-router.delete("/:id", removeFeedMonitoring);
-router.get("/:id/articles", getArticlesByFeedid);
-router.post("/:id/disable", disableFeed);
-router.post("/:id/sync", syncFeed);
+router.post("/", validateDto(addFeedMonitoringDto), addFeedMonitoring);
+router.get("/:id", validateDto(feedIdParamDto), getFeedById);
+router.delete("/:id", validateDto(feedIdParamDto), removeFeedMonitoring);
+router.get(
+  "/:id/articles",
+  validateDto(getArticlesByFeedDto),
+  getArticlesByFeedid,
+);
+router.post("/:id/disable", validateDto(feedIdParamDto), disableFeed);
+router.post("/:id/sync", validateDto(feedIdParamDto), syncFeed);
 
 export default router;

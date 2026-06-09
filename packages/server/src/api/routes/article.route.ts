@@ -5,12 +5,14 @@ import {
   setArticleRead,
   setArticleStarred,
 } from "../controllers/article.controller";
+import validateDto from "../middlewares/validate-dto";
+import { articleIdParam, getAllArticlesDto } from "../dto/article.dto";
 
 const router = express.Router();
 
-router.get("/", getAllArticles);
-router.get("/:id", getArticleById);
-router.post("/:id/star", setArticleStarred);
-router.post("/:id/mark-read", setArticleRead);
+router.get("/", validateDto(getAllArticlesDto), getAllArticles);
+router.get("/:id", validateDto(articleIdParam), getArticleById);
+router.post("/:id/star", validateDto(articleIdParam), setArticleStarred);
+router.post("/:id/mark-read", validateDto(articleIdParam), setArticleRead);
 
 export default router;
