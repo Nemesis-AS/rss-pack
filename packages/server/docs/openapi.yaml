@@ -1,0 +1,535 @@
+openapi: 3.0.3
+info:
+  title: RSS Server API
+  version: 1.0.0
+  description: |
+    OpenAPI specification for the RSS server providing feed and article
+    management endpoints. Covers feed monitoring, synchronization, and
+    article reading/star operations.
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+tags:
+  - name: Articles
+    description: Operations related to articles
+  - name: Feeds
+    description: Operations related to feed monitoring and management
+paths:
+  /articles:
+    get:
+      tags: [Articles]
+      summary: Get articles
+      description: Retrieve a paginated list of articles. Supports filtering by feed, starred status, and basic pagination.
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number (1-based)
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+        - name: query
+          in: query
+          schema:
+            type: string
+          description: Full-text filter applied to article titles
+        - name: feed
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by feed id (UUID)
+        - name: starred
+          in: query
+          schema:
+            type: boolean
+          description: If true, only return starred articles
+      responses:
+        "200":
+          description: Paginated list of articles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedArticlesResponse"
+        "400":
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /articles/{id}:
+    get:
+      tags: [Articles]
+      summary: Get article by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Article found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleResponse"
+        "404":
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /articles/{id}/star:
+    post:
+      tags: [Articles]
+      summary: Toggle article starred state
+      description: Mark or unmark an article as starred. Use query `unstar=true` to unstar.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: unstar
+          in: query
+          schema:
+            type: boolean
+          description: If true, unstar the article (otherwise star)
+      responses:
+        "200":
+          description: Operation completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdResponse"
+        "404":
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /articles/{id}/mark-read:
+    post:
+      tags: [Articles]
+      summary: Toggle article read state
+      description: Mark an article as read. Use query `unread=true` to mark unread.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: unread
+          in: query
+          schema:
+            type: boolean
+          description: If true, mark the article as unread
+      responses:
+        "200":
+          description: Operation completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdResponse"
+        "404":
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /feeds:
+    get:
+      tags: [Feeds]
+      summary: Get feeds
+      description: Retrieve a paginated list of monitored feeds.
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: query
+          in: query
+          schema:
+            type: string
+          description: Full-text filter applied to feed titles
+        - name: disabled
+          in: query
+          schema:
+            type: boolean
+          description: Include disabled feeds when true
+      responses:
+        "200":
+          description: Paginated list of feeds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedFeedsResponse"
+    post:
+      tags: [Feeds]
+      summary: Add feed monitoring
+      description: Start monitoring a new feed URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddFeedMonitoringDto"
+      responses:
+        "201":
+          description: Feed monitoring added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /feeds/{id}:
+    get:
+      tags: [Feeds]
+      summary: Get feed by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Feed found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedResponse"
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      tags: [Feeds]
+      summary: Remove feed monitoring
+      description: Stop monitoring and remove the feed.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Feed removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdResponse"
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /feeds/{id}/articles:
+    get:
+      tags: [Feeds]
+      summary: Get articles for a feed
+      description: Get paginated articles that belong to a specific feed.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 25
+        - name: unread
+          in: query
+          schema:
+            type: boolean
+        - name: starred
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Paginated list of articles for the feed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedArticlesResponse"
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /feeds/{id}/disable:
+    post:
+      tags: [Feeds]
+      summary: Disable or enable a feed
+      description: Disable (or re-enable) monitoring for a feed. Use query `enable=true` to enable.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: enable
+          in: query
+          schema:
+            type: boolean
+          description: If true, enable the feed; otherwise disable it
+      responses:
+        "200":
+          description: Feed updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdResponse"
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /feeds/{id}/sync:
+    post:
+      tags: [Feeds]
+      summary: Trigger feed synchronization
+      description: Manually trigger fetching and parsing of the feed. This operation in the current implementation returns a status message.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Synchronization triggered (or WIP message)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataStringResponse"
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+components:
+  schemas:
+    Article:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        feedId:
+          type: string
+          format: uuid
+        guid:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+          nullable: true
+        title:
+          type: string
+        author:
+          type: string
+          nullable: true
+        summary:
+          type: string
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        isRead:
+          type: boolean
+        isStarred:
+          type: boolean
+        contentHash:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, feedId, title]
+
+    Feed:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+        siteUrl:
+          type: string
+          format: uri
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        refreshInterval:
+          type: integer
+          nullable: true
+        lastFetchedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSuccessfulFetchAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastErrorAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastErrorMessage:
+          type: string
+          nullable: true
+        failureCount:
+          type: integer
+          nullable: true
+        isDisabled:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, url]
+
+    Meta:
+      type: object
+      properties:
+        page:
+          type: integer
+        perPage:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    PaginatedArticlesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Article"
+        meta:
+          $ref: "#/components/schemas/Meta"
+
+    PaginatedFeedsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feed"
+        meta:
+          $ref: "#/components/schemas/Meta"
+
+    ArticleResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Article"
+
+    FeedResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Feed"
+
+    IdResponse:
+      type: object
+      properties:
+        data:
+          type: string
+
+    DataStringResponse:
+      type: object
+      properties:
+        data:
+          type: string
+
+    AddFeedMonitoringDto:
+      type: object
+      properties:
+        feedUrl:
+          type: string
+          format: uri
+          description: RSS/Atom feed URL to monitor
+      required: [feedUrl]
+
+    ApiError:
+      type: object
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
+        details:
+          type: object
+      required: [status, message]
