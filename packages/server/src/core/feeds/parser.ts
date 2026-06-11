@@ -19,7 +19,7 @@ export async function fetchFeed(feedUrl: string) {
         url,
         title,
         author: item.creator ?? item.author ?? null,
-        summary: item.contentSnippet ?? null,
+        summary: item.contentSnippet ?? item.summary ?? null,
         content: item.content ?? item["content:encoded"] ?? null,
         publishedAt: item.isoDate ? new Date(item.isoDate) : null,
         contentHash: createHash("sha256")

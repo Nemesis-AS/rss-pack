@@ -1,3 +1,4 @@
+import path from "path";
 import express from "express";
 import pinoHttp from "pino-http";
 
@@ -10,8 +11,16 @@ const app = express();
 app.use(pinoHttp({ logger }));
 app.use(express.json());
 
+app.set("view engine", "ejs");
+app.set("views", path.join(process.cwd(), "views"));
+app.use(express.static(path.join(process.cwd(), "public")));
+
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+app.get("/", (req, res) => {
+  res.render("index");
 });
 
 app.use("/feeds", feedRoutes);
