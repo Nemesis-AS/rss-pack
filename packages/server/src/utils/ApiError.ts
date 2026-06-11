@@ -17,6 +17,10 @@ export default class ApiError extends Error {
     return new ApiError(404, `${resource} not found`);
   }
 
+  static Conflict(message: string) {
+    return new ApiError(409, message);
+  }
+
   static InternalServerError(message: string) {
     return new ApiError(500, message);
   }

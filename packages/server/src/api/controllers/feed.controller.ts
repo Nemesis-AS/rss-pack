@@ -53,11 +53,22 @@ export const addFeedMonitoring = async (req: Request, res: Response) => {
 
   if (!feedUrl) throw ApiError.BadRequest("feed url is required");
 
-  const newFeed = await prisma.feed.create({
-    data: {
-      url: feedUrl,
-    },
-  });
+  let newFeed;
+  try {
+    newFeed = await prisma.feed.create({
+      data: {
+        url: feedUrl,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    )
+      throw ApiError.Conflict("feed with this url is already being monitored");
+
+    throw error;
+  }
 
   await scheduleFeedRefresh(newFeed.id, newFeed.refreshInterval);
 

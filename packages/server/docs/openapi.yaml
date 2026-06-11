@@ -212,6 +212,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "409":
+          description: A feed with this url is already being monitored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 
   /feeds/{id}:
     get:
