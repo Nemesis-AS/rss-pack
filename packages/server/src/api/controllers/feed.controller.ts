@@ -5,6 +5,7 @@ import {
   FeedWhereInput,
   PrismaClientKnownRequestError,
 } from "../../db/generated/prisma/internal/prismaNamespace";
+import { indexFeed } from "../../core/feeds/indexer";
 
 export const getAllFeeds = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit) || 25;
@@ -109,6 +110,7 @@ export const getArticlesByFeedid = async (req: Request, res: Response) => {
       where: { feedId: String(id) },
       take: limit,
       skip: offset,
+      omit: { content: true },
     }),
     prisma.article.count({
       where: { feedId: String(id) },

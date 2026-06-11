@@ -28,6 +28,7 @@ export const getAllArticles = async (req: Request, res: Response) => {
       take: limit,
       skip: offset,
       where: whereClause,
+      omit: { content: true },
     }),
     prisma.article.count(),
   ]);

@@ -39,6 +39,7 @@ model Article {
   title       String
   author      String?
   summary     String?
+  content     String?
   publishedAt DateTime?
   isRead      Boolean   @default(false)
   isStarred   Boolean   @default(false)
