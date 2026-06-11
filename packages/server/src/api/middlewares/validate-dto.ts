@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as z from "zod";
-import ApiError from "../../utils/ApiError";
+import ApiError from "../../utils/ApiError.js";
 
 export interface SchemaInput<
   T extends z.ZodType,

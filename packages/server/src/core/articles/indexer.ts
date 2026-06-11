@@ -1,5 +1,5 @@
-import prisma from "../../db/prisma";
-import type { ArticleUncheckedCreateInput } from "../../db/generated/prisma/models/Article";
+import prisma from "../../db/prisma.js";
+import type { ArticleUncheckedCreateInput } from "../../db/generated/prisma/models/Article.js";
 
 type ParsedArticle = Omit<ArticleUncheckedCreateInput, "feedId">;
 

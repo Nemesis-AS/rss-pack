@@ -1,15 +1,15 @@
 import type { Request, Response } from "express";
-import prisma from "../../db/prisma";
-import ApiError from "../../utils/ApiError";
+import prisma from "../../db/prisma.js";
+import ApiError from "../../utils/ApiError.js";
 import {
   FeedWhereInput,
   PrismaClientKnownRequestError,
-} from "../../db/generated/prisma/internal/prismaNamespace";
+} from "../../db/generated/prisma/internal/prismaNamespace.js";
 import {
   enqueueFeedRefresh,
   scheduleFeedRefresh,
   unscheduleFeedRefresh,
-} from "../../scheduler";
+} from "../../scheduler/index.js";
 
 export const getAllFeeds = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit) || 25;

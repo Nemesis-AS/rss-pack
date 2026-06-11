@@ -1,10 +1,10 @@
 import express from "express";
 import pinoHttp from "pino-http";
 
-import feedRoutes from "./api/routes/feed.route";
-import articleRoutes from "./api/routes/article.route";
-import errorHandler from "./api/middlewares/error-handler";
-import logger from "./utils/logger";
+import feedRoutes from "./api/routes/feed.route.js";
+import articleRoutes from "./api/routes/article.route.js";
+import errorHandler from "./api/middlewares/error-handler.js";
+import logger from "./utils/logger.js";
 
 const app = express();
 app.use(pinoHttp({ logger }));

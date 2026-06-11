@@ -1,9 +1,9 @@
-import "./worker";
-import { scheduleAllFeeds } from "./repeatables";
+import "./worker.js";
+import { scheduleAllFeeds } from "./repeatables.js";
 
 export async function startScheduler() {
   await scheduleAllFeeds();
 }
 
-export * from "./queue";
-export * from "./repeatables";
+export * from "./queue.js";
+export * from "./repeatables.js";

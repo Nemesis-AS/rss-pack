@@ -4,9 +4,9 @@ import {
   getArticleById,
   setArticleRead,
   setArticleStarred,
-} from "../controllers/article.controller";
-import validateDto from "../middlewares/validate-dto";
-import { articleIdParam, getAllArticlesDto } from "../dto/article.dto";
+} from "../controllers/article.controller.js";
+import validateDto from "../middlewares/validate-dto.js";
+import { articleIdParam, getAllArticlesDto } from "../dto/article.dto.js";
 
 const router = express.Router();
 

@@ -1,7 +1,7 @@
-import prisma from "../../db/prisma";
-import ApiError from "../../utils/ApiError";
-import { indexArticles } from "../articles/indexer";
-import { fetchFeed } from "./parser";
+import prisma from "../../db/prisma.js";
+import ApiError from "../../utils/ApiError.js";
+import { indexArticles } from "../articles/indexer.js";
+import { fetchFeed } from "./parser.js";
 
 export async function indexFeed(feedId: string) {
   const feed = await prisma.feed.findUnique({

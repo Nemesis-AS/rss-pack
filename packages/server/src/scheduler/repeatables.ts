@@ -1,5 +1,5 @@
-import prisma from "../db/prisma";
-import { feedRefreshQueue } from "./queue";
+import prisma from "../db/prisma.js";
+import { feedRefreshQueue } from "./queue.js";
 
 function jobSchedulerId(feedId: string) {
   return `refresh-${feedId}`;

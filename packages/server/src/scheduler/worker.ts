@@ -1,8 +1,8 @@
 import { Worker } from "bullmq";
-import { indexFeed } from "../core/feeds/indexer";
-import connection from "./connection";
-import { FEED_REFRESH_QUEUE } from "./queue";
-import logger from "../utils/logger";
+import { indexFeed } from "../core/feeds/indexer.js";
+import connection from "./connection.js";
+import { FEED_REFRESH_QUEUE } from "./queue.js";
+import logger from "../utils/logger.js";
 
 export const feedRefreshWorker = new Worker(
   FEED_REFRESH_QUEUE,

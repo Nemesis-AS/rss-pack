@@ -1,6 +1,6 @@
-import app from "./app";
-import { startScheduler } from "./scheduler";
-import logger from "./utils/logger";
+import app from "./app.js";
+import { startScheduler } from "./scheduler/index.js";
+import logger from "./utils/logger.js";
 
 const PORT = process.env.PORT || 8000;
 

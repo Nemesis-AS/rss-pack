@@ -8,15 +8,15 @@ import {
   removeFeedMonitoring,
   setRefreshInterval,
   syncFeed,
-} from "../controllers/feed.controller";
-import validateDto from "../middlewares/validate-dto";
+} from "../controllers/feed.controller.js";
+import validateDto from "../middlewares/validate-dto.js";
 import {
   addFeedMonitoringDto,
   feedIdParamDto,
   getAllFeedsDto,
   getArticlesByFeedDto,
   setRefreshIntervalDto,
-} from "../dto";
+} from "../dto/index.js";
 
 const router = express.Router();
 

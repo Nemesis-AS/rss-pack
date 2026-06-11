@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import prisma from "../../db/prisma";
-import ApiError from "../../utils/ApiError";
-import { ArticleWhereInput } from "../../db/generated/prisma/models";
+import prisma from "../../db/prisma.js";
+import ApiError from "../../utils/ApiError.js";
+import { ArticleWhereInput } from "../../db/generated/prisma/models.js";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 export const getAllArticles = async (req: Request, res: Response) => {
