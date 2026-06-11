@@ -16,6 +16,13 @@ export const feedIdParamDto = {
   params: z.object({ id: z.uuidv4() }),
 };
 
+export const setRefreshIntervalDto = {
+  ...feedIdParamDto,
+  body: z.object({
+    refreshInterval: z.coerce.number().int().min(1),
+  }),
+};
+
 export const getArticlesByFeedDto = {
   ...feedIdParamDto,
   query: z.object({

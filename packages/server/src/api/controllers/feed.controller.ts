@@ -5,7 +5,11 @@ import {
   FeedWhereInput,
   PrismaClientKnownRequestError,
 } from "../../db/generated/prisma/internal/prismaNamespace";
-import { indexFeed } from "../../core/feeds/indexer";
+import {
+  enqueueFeedRefresh,
+  scheduleFeedRefresh,
+  unscheduleFeedRefresh,
+} from "../../scheduler";
 
 export const getAllFeeds = async (req: Request, res: Response) => {
   const limit = Number(req.query.limit) || 25;
@@ -47,8 +51,6 @@ export const getAllFeeds = async (req: Request, res: Response) => {
 export const addFeedMonitoring = async (req: Request, res: Response) => {
   const { feedUrl } = req.body;
 
-  // @todo! Update this to fetch feed metadata using core
-
   if (!feedUrl) throw ApiError.BadRequest("feed url is required");
 
   const newFeed = await prisma.feed.create({
@@ -56,6 +58,8 @@ export const addFeedMonitoring = async (req: Request, res: Response) => {
       url: feedUrl,
     },
   });
+
+  await scheduleFeedRefresh(newFeed.id, newFeed.refreshInterval);
 
   res.json({
     data: newFeed,
@@ -67,6 +71,8 @@ export const removeFeedMonitoring = async (req: Request, res: Response) => {
 
   try {
     await prisma.feed.delete({ where: { id: String(id) } });
+
+    await unscheduleFeedRefresh(String(id));
 
     res.json({
       data: id,
@@ -133,12 +139,15 @@ export const disableFeed = async (req: Request, res: Response) => {
   const enable = !!req.query.enable;
 
   try {
-    await prisma.feed.update({
+    const feed = await prisma.feed.update({
       where: { id: String(id) },
       data: {
         isDisabled: !enable,
       },
     });
+
+    if (enable) await scheduleFeedRefresh(feed.id, feed.refreshInterval);
+    else await unscheduleFeedRefresh(feed.id);
 
     res.json({
       data: id,
@@ -155,6 +164,34 @@ export const disableFeed = async (req: Request, res: Response) => {
   }
 };
 
+export const setRefreshInterval = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { refreshInterval } = req.body;
+
+  try {
+    const feed = await prisma.feed.update({
+      where: { id: String(id) },
+      data: { refreshInterval },
+    });
+
+    if (!feed.isDisabled)
+      await scheduleFeedRefresh(feed.id, feed.refreshInterval);
+
+    res.json({
+      data: feed,
+    });
+  } catch (error) {
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    )
+      throw ApiError.NotFound("feed");
+    throw ApiError.InternalServerError(
+      "an error occurred while updating refresh interval",
+    );
+  }
+};
+
 export const syncFeed = async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -162,8 +199,9 @@ export const syncFeed = async (req: Request, res: Response) => {
 
   if (!feed) throw ApiError.NotFound("feed");
 
-  // @todo! Implement this
+  await enqueueFeedRefresh(feed.id);
+
   res.json({
-    data: "WIP! Feed sync would be added later",
+    data: "feed refresh queued",
   });
 };

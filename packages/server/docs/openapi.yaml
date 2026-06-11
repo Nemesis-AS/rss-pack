@@ -338,6 +338,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /feeds/{id}/refresh-interval:
+    patch:
+      tags: [Feeds]
+      summary: Update feed refresh interval
+      description: Update how often (in seconds) the feed should be refreshed. Reschedules the feed's repeating refresh job to use the new interval.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRefreshIntervalDto"
+      responses:
+        "200":
+          description: Refresh interval updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Feed not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /feeds/{id}/sync:
     post:
       tags: [Feeds]
@@ -513,6 +551,15 @@ components:
       properties:
         data:
           type: string
+
+    SetRefreshIntervalDto:
+      type: object
+      properties:
+        refreshInterval:
+          type: integer
+          minimum: 1
+          description: Refresh interval in seconds
+      required: [refreshInterval]
 
     AddFeedMonitoringDto:
       type: object

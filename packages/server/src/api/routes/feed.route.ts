@@ -6,6 +6,7 @@ import {
   getArticlesByFeedid,
   getFeedById,
   removeFeedMonitoring,
+  setRefreshInterval,
   syncFeed,
 } from "../controllers/feed.controller";
 import validateDto from "../middlewares/validate-dto";
@@ -14,6 +15,7 @@ import {
   feedIdParamDto,
   getAllFeedsDto,
   getArticlesByFeedDto,
+  setRefreshIntervalDto,
 } from "../dto";
 
 const router = express.Router();
@@ -28,6 +30,11 @@ router.get(
   getArticlesByFeedid,
 );
 router.post("/:id/disable", validateDto(feedIdParamDto), disableFeed);
+router.patch(
+  "/:id/refresh-interval",
+  validateDto(setRefreshIntervalDto),
+  setRefreshInterval,
+);
 router.post("/:id/sync", validateDto(feedIdParamDto), syncFeed);
 
 export default router;

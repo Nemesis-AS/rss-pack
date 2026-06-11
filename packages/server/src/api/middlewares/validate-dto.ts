@@ -25,7 +25,6 @@ export default function validateDto<
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.log(error.issues[0].message);
         next(ApiError.BadRequest(error.issues[0].message));
       } else
         next(
