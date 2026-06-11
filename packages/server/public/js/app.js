@@ -67,11 +67,21 @@ els.tabBtns.forEach((btn) => {
 
 // --- article list ---
 
+const feedTitles = new Map();
+const disabledFeedIds = new Set();
+
 async function loadFeedOptions() {
   const { data } = await fetchJSON("/feeds?limit=100&disabled=true");
   const current = els.feedFilter.value;
   els.feedFilter.innerHTML = '<option value="">all feeds</option>';
+  feedTitles.clear();
+  disabledFeedIds.clear();
   data.forEach((feed) => {
+    feedTitles.set(feed.id, feed.title || feed.url);
+    if (feed.isDisabled) {
+      disabledFeedIds.add(feed.id);
+      return;
+    }
     const opt = document.createElement("option");
     opt.value = feed.id;
     opt.textContent = feed.title || feed.url;
@@ -101,6 +111,8 @@ async function loadArticles() {
 function renderArticles(articles) {
   els.articleList.innerHTML = "";
 
+  articles = articles.filter((article) => !disabledFeedIds.has(article.feedId));
+
   if (!articles.length) {
     els.articleList.innerHTML = '<li class="empty">no articles found</li>';
     return;
@@ -110,9 +122,18 @@ function renderArticles(articles) {
     const li = document.createElement("li");
     li.className = `article-item${article.isRead ? "" : " unread"}`;
 
+    const main = document.createElement("div");
+    main.className = "article-main";
+
     const title = document.createElement("span");
     title.className = "article-title";
     title.textContent = article.title;
+
+    const feed = document.createElement("span");
+    feed.className = "article-feed";
+    feed.textContent = feedTitles.get(article.feedId) || "";
+
+    main.append(title, feed);
 
     const meta = document.createElement("span");
     meta.className = "article-meta";
@@ -127,7 +148,7 @@ function renderArticles(articles) {
       toggleStar(article);
     });
 
-    li.append(title, meta, starBtn);
+    li.append(main, meta, starBtn);
     li.addEventListener("click", () => openArticle(article));
     els.articleList.appendChild(li);
   });
@@ -274,15 +295,8 @@ function renderFeeds(feeds) {
 
     const syncBtn = document.createElement("button");
     syncBtn.textContent = "sync";
-    syncBtn.addEventListener("click", async () => {
-      syncBtn.disabled = true;
-      syncBtn.textContent = "syncing...";
-      try {
-        await fetchJSON(`/feeds/${feed.id}/sync`, { method: "POST" });
-      } finally {
-        syncBtn.disabled = false;
-        syncBtn.textContent = "sync";
-      }
+    syncBtn.addEventListener("click", () => {
+      fetchJSON(`/feeds/${feed.id}/sync`, { method: "POST" });
     });
 
     const toggleBtn = document.createElement("button");
@@ -336,5 +350,4 @@ els.addFeedForm.addEventListener("submit", async (e) => {
 
 // --- init ---
 
-loadFeedOptions();
-loadArticles();
+loadFeedOptions().then(loadArticles);
